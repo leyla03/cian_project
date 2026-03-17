@@ -1,0 +1,29 @@
+# Виртуальное окружение
+.venv/
+venv/
+env/
+
+# Python кэш
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py[cod]
+
+# Данные (CSV файлы)
+*.csv
+*.xlsx
+*.json
+*.parquet
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Редакторы
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

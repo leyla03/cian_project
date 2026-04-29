@@ -1,77 +1,78 @@
 
-# Сбор данных о недвижимости с Циан (cian.ru)
+# CIAN Real Estate Price Predictor
 
-## Описание проекта (текущее состояние)
-Скрипт для сбора данных о продаже квартир с сайта Циан (cian.ru) с использованием библиотеки cianparser. Собирает реальные объявления с текстовыми описаниями, структурированными признаками и ссылками на фотографии.
+Сервис для оценки стоимости квартир на основе данных с сайта Циан.
 
-- **Текстовое описание:** В данных есть поля author и author_type с информацией о продавце
-- **Изображения:** В каждом объявлении есть поле url со ссылкой на страницу с фотографиями интерьеров и планировок
-- **Структурированные признаки:** Цена, количество комнат, площадь, этаж, метро, район, адрес
-- **Количество объявлений:** Собрано 420 объявлений
+## Структура проекта
+cian-project/
+├── data/ # Данные
+│ ├── raw/ # Собранные данные
+│ └── processed/ # Обработанные Parquet файлы
+├── models/ # Обученные модели
+├── src/
+│ ├── api/ # FastAPI
+│ ├── data/ # Парсинг и валидация
+│ ├── features/ # Эмбеддинги
+│ ├── models/ # Обучение CatBoost
+│ ├── report/ # Генератор отчетов
+│ └── search/ # Семантический поиск
+└── pyproject.toml # Зависимости
 
-## Источник данных
-Данные собираются с сайта [cian.ru](https://www.cian.ru)
+## Технологии
 
-## Установка и запуск
+- **Сбор данных**: cianparser, Selenium
+- **Валидация**: Pandera
+- **Хранение**: Parquet, DVC
+- **Эмбеддинги**: Sentence Transformers (all-MiniLM-L6-v2, CLIP)
+- **Векторная БД**: ChromaDB
+- **Модель**: CatBoost
+- **API**: FastAPI
 
-### Требования
-- Python 3.8 или выше
-- Git
+## Установка
 
-### Пошаговая инструкция
+```bash
+git clone https://github.com/leyla03/cian_project.git
+cd cian_project
+pip install -e .
+Запуск
+1. Сбор данных
+bash
+python src/data/selenium_parser.py
+2. Валидация и Parquet
+bash
+python src/data/validate_to_parquet.py
+3. Текстовые эмбеддинги
+bash
+python src/features/text_embeddings.py
+4. Обучение модели
+bash
+python src/models/compare_models.py
+5. Запуск API
+bash
+python src/api/main.py
+Открой http://127.0.0.1:8000/docs
 
-1. **Клонировать репозиторий**
-   ```bash
-   git clone https://github.com/leyla03/cian_project.git
-   cd cian_project
-   ```
-
-2. **Создать и активировать виртуальное окружение**
-   ```bash
-   python -m venv .venv
-   .venv\Scripts\activate
-   ```
-
-3. **Установить зависимости**
-   ```bash
-   pip install git+https://github.com/SC1DR-OFFICIAL/cianparser-with-headers.git
-   pip install pandas
-   ```
-
-4. **Запустить скрипт**
-   ```bash
-   python scraper.py
-   ```
-
-### Результат
-После выполнения в папке появится файл `data.csv` с собранными объявлениями.
-
-## Структура данных
-
-| Поле | Описание |
-|------|----------|
-| author | Продавец |
-| author_type | Тип продавца |
-| url | Ссылка на объявление |
-| location | Город |
-| deal_type | Тип сделки |
-| accommodation_type | Тип жилья |
-| floor | Этаж |
-| floors_count | Всего этажей в доме |
-| rooms_count | Количество комнат |
-| total_meters | Общая площадь |
-| price_per_month | Цена в месяц |
-| commissions | Комиссия |
-| district | Район города |
-| street | Улица |
-| house_number | Номер дома |
-| underground | Ближайшая станция метро |
-| residential_complex | Название жилого комплекса |
-| price | Цена в рублях |
-
-## Файлы проекта
-- `scraper.py` — основной скрипт для сбора данных
-- `data.csv` — собранные данные
-- `README.md` — документация
-- `.gitignore` — список файлов, которые не попадают в Git
-```
+API Endpoints
+Метод	Эндпоинт	Описание
+GET	/	Информация о сервисе
+GET	/health	Проверка статуса
+POST	/predict	Предсказание цены
+Пример запроса
+json
+POST /predict
+{
+  "total_meters": 50,
+  "floor": 5,
+  "floors_total": 12,
+  "rooms_count": 2
+}
+Пример ответа
+json
+{
+  "price_rub": 39888484.9,
+  "price_million": 39.9,
+  "message": "Ориентировочная стоимость квартиры площадью 50.0 м²"
+}
+Результаты модели
+Модель	MAE	R²
+Базовая (4 признака)	24.6 млн ₽	0.28

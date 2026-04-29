@@ -1,0 +1,11 @@
+[project]
+name = "cian-project"
+version = "0.1.0"
+description = "Сбор данных с Циан для анализа цен на квартиры"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.2.0",
+    "cianparser @ git+https://github.com/NurjahonErgashevMe/cianparser.git",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+]
